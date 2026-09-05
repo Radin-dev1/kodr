@@ -1,70 +1,100 @@
 # kodr
 
-**An open-source game-generation engine that actually runs.** Feed it a sentence,
-an image, or a video clip — it returns a playable game and a downloadable 3D world.
+**A ready-to-play AI game-dev studio that runs entirely on your own hardware.** No
+external AI services are required — every model is fully offline, deterministic,
+and works on CPU. Ship it as a static site, or run `server.py` for real accounts,
+per-model API keys and usage tracking.
 
-```
-app.py                               ← Gradio playground (Hugging Face Spaces)
-api.py                               ← stdlib HTTP API (GET /v1/engines, POST /v1/generate|/v1/map|/v1/3d|/v1/vision)
-engine/
-  llm.py                             ← routed open LLM over the free HF Inference router
-  vision.py                          ← reads images AND videos (ffmpeg/OpenCV frame sampling)
-  three_d.py                         ← text/image → voxel world → real .obj/.glb/.stl meshes
-  codegen.py                         ← AI-first game code, guaranteed local fallback
-  theme.py                           ← palettes + world synthesis for every mood
-model/                               ← training pipeline, dataset + kodr-map-v1 compiler (optional)
-index.html · styles.css · app.js     ← the website (served by GitHub Pages)
-```
+Three models, one website:
 
-## What works (all verified end-to-end)
-
-| Capability | How | Verification |
+| Model | What it does | Engine |
 |---|---|---|
-| Text → game code | Qwen2.5-Coder-7B over `router.huggingface.co` (free token) | Generated game executed all 60 frames to victory |
-| Image / video understanding | Local CV: palette, mood, structure; ffmpeg frame sampling | Image + synthesized clip both analyzed |
-| Text / image → 3D | Procedural voxel worlds → OBJ + GLB + STL + PNG preview | Files parsed + cross-validated (face counts match) |
-| Never breaks | Every layer has an offline fallback; cloud bits are opt-in | Fallback produced runnable code when LLM was down |
+| **Nova-1** | Text → runnable game code (Python & Roblox fully playable; Unity / Godot / Unreal scaffolds) | `engine/nova.py` — offline, prompt-adaptive, seeded |
+| **rex3d** | Text → voxel 3D world → real `.obj` / `.glb` / `.stl` meshes + preview | `engine/three_d.py` — offline voxel engine |
+| **Prism-1** | Text → seeded 2D art (landscapes, nebulae, cyber skylines, sunsets, sprites, textures) | `engine/prism.py` — offline, seeded |
 
-Codegen is **LLM-first**: a real open coder model writes the game. If the router is
-unreachable or no `HF_TOKEN` is present, a self-contained template engine takes
-over — the user always gets working code, never an error screen.
-
-## Try it
-- Live playground: <https://huggingface.co/spaces/Radinkazemian/kodr-playground>
-- Website: <https://radin-dev1.github.io/kodr/>
-- Model / dataset (training artifacts): <https://huggingface.co/Radinkazemian/kodr>
-- Run locally: `python app.py` (needs `pip install -r requirements.txt`)
-
-## Use the API
-```bash
-python api.py            # defaults to :8080
-
-curl localhost:8080/v1/engines
-curl -X POST localhost:8080/v1/generate -H "Content-Type: application/json" \
-     -d '{"description": "A lava dungeon survival game"}'
-curl -X POST localhost:8080/v1/map -H "Content-Type: application/json" \
-     -d '{"description": "neon city race", "size": 20}'
-curl -X POST localhost:8080/v1/3d -H "Content-Type: application/json" \
-     -d '{"description": "ocean ruins", "size": 16}'
+```
+server.py                              ← self-hosted backend (auth, keys, usage, model APIs, static site)
+index.html · styles.css · app.js        ← the website (demo mode works with zero backend)
+engine/
+  nova.py                              ← Nova-1 code generation (fully offline)
+  prism.py                             ← Prism-1 2D generation (fully offline)
+  three_d.py                           ← rex3d voxel world → OBJ/GLB/STL
+  theme.py                             ← palettes + world synthesis for every mood
+  vision.py                            ← image/video analysis (legacy, used by the old Gradio app)
+  codegen.py · llm.py                  ← legacy Smart-code path (optional, needs HF token)
+app.py · api.py                        ← legacy Gradio playground + stdlib API
+model/                                 ← training pipeline + dataset (optional)
 ```
 
-For the smart code path, export your Hugging Face token:
-`export HF_TOKEN=hf_…` (the router is OpenAI-compatible; no key needed beyond your
-free HF account token). Without it everything still works via the local engine.
+## Quick start
 
-## Compile a hand-authored map into any engine (legacy tooling)
+**Option A — static site (demo mode).** Open `index.html` in a browser. Accounts,
+keys and generation all live in your browser via `localStorage`, with in-browser
+generators for all three models.
+
+**Option B — self-hosted server (recommended for real accounts/keys/usage).**
+
 ```bash
-python model/tools/compile_map.py model/tools/sample_map.json --preview
-python model/tools/compile_map.py model/tools/sample_map.json --engine roblox --out buildMap.lua
-python model/tools/compile_map.py model/tools/sample_map.json --engine unity --out MapBuilder.cs
-python model/tools/compile_map.py model/tools/sample_map.json --engine godot --out map_builder.gd
+cd kodr
+python server.py                # defaults to :7860  (KODR_PORT to override)
 ```
 
-## Train your own Kodr
-Optional. See `model/train.py` or open `model/colab/Kodr_Train.ipynb` in Google
-Colab (Runtime → Change runtime type → GPU). It QLoRA-tunes a Qwen3-class coder on
-the public game-dev corpus and pushes a merged standalone checkpoint to your
-Hugging Face account.
+Then open <http://localhost:7860>. Sign up, grab an API key per model inside
+**Account**, and generate from the in-site playground or over HTTP:
+
+```bash
+# sign up
+curl -X POST localhost:7860/api/auth/signup -H "Content-Type: application/json" \
+     -d '{"username":"dev","email":"dev@example.com","password":"secret123"}'
+
+# create a Nova-1 key (this returns the full key once)
+curl -X POST localhost:7860/api/keys -H "Content-Type: application/json" \
+     -b <session-cookie> -d '{"model":"nova1"}'
+
+# generate a playable Python game
+curl -X POST localhost:7860/api/v1/nova1/generate -H "Content-Type: application/json" \
+     -H "Authorization: Bearer <nova1_dev_...>" \
+     -d '{"prompt":"ice parkour race with drones","engine":"python"}'
+
+# generate a 3D world (obj/glb/stl/preview in the response)
+curl -X POST localhost:7860/api/v1/rex3d/generate -H "Content-Type: application/json" \
+     -H "Authorization: Bearer <rex3d_dev_...>" -d '{"prompt":"snow village","size":12}'
+
+# generate 2D art
+curl -X POST localhost:7860/api/v1/prism1/generate -H "Content-Type: application/json" \
+     -H "Authorization: Bearer <prism1_dev_...>" -d '{"prompt":"neon cyberpunk skyline"}'
+```
+
+## Model API surface
+
+| Endpoint | Key model | Returns |
+|---|---|---|
+| `POST /api/v1/nova1/generate` | `nova1` | playable code, theme, seed, per-prompt features (enemy, difficulty, objective) |
+| `POST /api/v1/rex3d/generate` | `rex3d` | mesh dict with `obj`, `glb`, `stl`, `preview_b64` base64 payloads |
+| `POST /api/v1/prism1/generate` | `prism1` | `image_b64` PNG + palette + style + seed |
+
+Auth / account endpoints: `/api/auth/signup|login|logout|me`, `/api/keys`,
+`/api/keys/revoke`, `/api/keys/regenerate`, `/api/usage`, `/api/config`. Keys are
+model-scoped (a Nova-1 key is rejected by rex3d and Prism-1), stored hashed
+(SHA-256), shown masked, and usage is logged per key with a daily breakdown.
+
+## Connect to a game engine
+
+Nova-1 emits full, self-contained code you drop straight into your engine:
+
+- **Roblox Studio** — generate the `roblox` variant, copy the script into
+  `ServerScriptService`, done.
+- **Python / pygame** — `python main.py` from the generated file.
+- **Unity** — `MapBuilder.cs` scaffold plugs into a MonoBehaviour.
+- **Godot** — `map_builder.gd` scaffold.
+- **Unreal** — `kodr_world.h` / `kodr_world.cpp` scaffold.
+
+## Legacy tooling (optional)
+
+- `python model/tools/compile_map.py model/tools/sample_map.json --engine roblox --out buildMap.lua` — compile a hand-authored map into any engine.
+- `python model/train.py` — QLoRA-tune a coder model on the game-dev corpus (needs GPU + Hugging Face account). Purely optional; the site never talks to Hugging Face.
 
 ## License
+
 Apache-2.0. See [LICENSE](LICENSE).

@@ -24,3 +24,7 @@ _upload/
 kodr3d_*/
 my_game.py
 vision_game.py
+
+# local server state (never commit)
+kodr.db
+kodr_secret.txt
