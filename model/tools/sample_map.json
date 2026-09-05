@@ -1,0 +1,33 @@
+{
+  "format": "kodr-map-v1",
+  "name": "Magma Ring",
+  "theme": "arena",
+  "tile_scale": 6,
+  "size": [14, 14],
+  "heightmap": [
+    "LLLLSSSSSSLLLL",
+    "LL..PPPPPP..LL",
+    "L..PPPPPPPP..L",
+    "L.PPPPPPPPPP.L",
+    "L..PPPPPPPP..L",
+    "LL..PPPPPP..LL",
+    "LLLLPPPPPPLLLL",
+    "LLLLPPPPPPLLLL",
+    "LL..PPPPPP..LL",
+    "L.PPPPPPPPPP.L",
+    "L..PPPPPPPP..L",
+    "L.PPPPPPPPPP.L",
+    "LL..PPPPPP..LL",
+    "LLLLSSSSSSLLLL"
+  ],
+  "lighting": { "mode": "sunset", "fog_color": [0.8, 0.35, 0.15] },
+  "spawn_logic": {
+    "teams": [ { "name": "Red", "spawn_marker": "S1" }, { "name": "Blue", "spawn_marker": "S2" } ],
+    "round_type": "elim",
+    "respawn_time_s": 0,
+    "match_time_s": 120
+  },
+  "game_rules": { "objective": "Last one standing wins. Ring of lava closes in slowly every 30s." },
+  "soundscape": { "ambient": "bubbling lava", "music_emotion": "battle" },
+  "design_notes": [ "Perfect mirror symmetry keeps duels fair." ]
+}

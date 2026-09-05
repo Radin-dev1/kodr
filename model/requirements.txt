@@ -1,0 +1,14 @@
+# Core training (GPU recommended)
+torch>=2.1
+transformers>=4.44
+peft>=0.12
+trl>=0.9
+datasets>=2.20
+accelerate>=0.33
+
+# Optional 4-bit QLoRA on GPU (Windows CPU can skip bitsandbytes)
+bitsandbytes>=0.43; platform_system != "Windows"
+
+# Packaging + pushing to Hugging Face
+huggingface_hub>=0.26
+safetensors>=0.4
