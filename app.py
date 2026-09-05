@@ -43,8 +43,25 @@ def make_code(idea, human_theme):
     return summary, fname
 
 
+def _file_path(x):
+    """Normalize gradio's file inputs (str | dict | list | FileData) to a path."""
+    if isinstance(x, (list, tuple)):
+        for item in x:
+            p = _file_path(item)
+            if p:
+                return p
+        return None
+    if isinstance(x, str):
+        return x
+    if isinstance(x, dict):
+        return x.get("path") or x.get("url") or None
+    if hasattr(x, "path"):
+        return x.path
+    return None
+
+
 def make_3d(text_theme, image, size):
-    img_path = image if isinstance(image, str) else None
+    img_path = _file_path(image)
     result = three_d.generate(text=(text_theme or ""), image_path=img_path, size=int(size))
     md = f"**World:** `{result['theme']}` · {result['meta']['voxels']} voxels · cloud: {result.get('cloud', False)}\n"
     if result.get("cloud_error"):
@@ -62,26 +79,37 @@ def build_concept_from_report(report, brief):
 
 
 def run_vision_report(input_path):
+    input_path = _file_path(input_path)
     if not input_path or not os.path.exists(input_path):
-        return ("Upload an image or a video first.", None, None)
+        return "Upload an image or a video first."
     ext = os.path.splitext(input_path)[1].lower()
     if ext in (".mp4", ".mov", ".webm", ".mkv", ".avi"):
         rep = vision.analyze_video(input_path, n=5)
     else:
         rep = vision.analyze_image(input_path)
     if not rep.get("ok"):
-        return (f"Analysis failed: {rep.get('error')}", None, None)
+        return f"Analysis failed: {rep.get('error')}"
     pal, key, _ = vision.concept_from_report(rep, "")
-    md = (
+    return (
         f"**Scene read** — mood: `{rep['mood']}` · palette: {', '.join(rep['palette_hex'])}\n\n"
         f"{rep['read']}\n\nSuggested Kodr theme: **{pal['name']}** (`{key}`).\n"
         "Turn this into a game with the button below."
     )
-    return md, key, pal["colors"][:4]
 
 
 def vision_to_game(input_path, brief):
-    rmd, key_, _ = run_vision_report(input_path)
+    input_path = _file_path(input_path)
+    from engine import vision as _vision
+    rep = None
+    if input_path and os.path.exists(input_path):
+        ext = os.path.splitext(input_path)[1].lower()
+        if ext in (".mp4", ".mov", ".webm", ".mkv", ".avi"):
+            rep = _vision.analyze_video(input_path, n=5)
+        else:
+            rep = _vision.analyze_image(input_path)
+    key_ = None
+    if rep and rep.get("ok"):
+        _, key_, _ = _vision.concept_from_report(rep, "")
     if not key_:
         key_ = theme_mod.detect_theme(brief or "")
     pal = theme_mod.PALETTES[key_]["colors"][:4]
@@ -148,4 +176,4 @@ with gr.Blocks(title=TITLE) as demo:
 
 
 if __name__ == "__main__":
-    demo.queue(default_concurrency_limit=2).launch(theme=gr.themes.Soft())
+    demo.queue(default_concurrency_limit=2).launch(theme=gr.themes.Soft(), show_error=True)
