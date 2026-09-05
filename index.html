@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>kodr — make games in any engine</title>
-<meta name="description" content="Kodr is an open-source game generator AI. Describe an idea; get working code, systems, and full maps for Roblox, Unity, Godot, and Unreal." />
+<title>kodr — the game-generation API</title>
+<meta name="description" content="Kodr is an open game-generation API. Send an idea, get working code, systems, and full maps for Roblox, Unity, Godot, and Unreal — as plain JSON." />
 <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,12 +25,16 @@
   </a>
   <nav class="nav-links">
     <a href="#make">Playground</a>
-    <a href="#features">Engine</a>
-    <a href="#model">Model</a>
-    <a href="#pipeline">How it's made</a>
+    <a href="#features">Features</a>
+    <a href="#api">API</a>
+    <a href="#how">How it works</a>
     <a href="#faq">FAQ</a>
   </nav>
   <div class="nav-cta">
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
     <a class="btn btn-ghost" href="https://github.com/Radin-dev1/kodr" target="_blank" rel="noopener">GitHub</a>
     <a class="btn btn-primary" href="#make">Try it free</a>
   </div>
@@ -41,46 +45,42 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-inner">
-      <p class="eyebrow"><span class="dot"></span> open-source · engine-agnostic · trained in the open</p>
-      <h1>Describe a game.<br /><em class="grad">Get the whole thing.</em></h1>
+      <p class="eyebrow"><span class="dot"></span> open game-generation API · engine-agnostic · ~2s median</p>
+      <h1>Describe a game.<br /><em class="grad">Ship the whole thing.</em></h1>
       <p class="sub">
-        Kodr turns one idea into working scripts, gameplay systems, and complete
+        One POST returns production-ready scripts, gameplay systems, and complete
         maps — for <strong>Roblox</strong>, <strong>Unity</strong>,
-        <strong>Godot</strong>, and <strong>Unreal</strong>. One model, every engine.
+        <strong>Godot</strong>, and <strong>Unreal</strong>. One API. Every engine.
       </p>
       <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="#make">
-          <span class="btn-caret">&gt;_</span> Build something
-        </a>
-        <a class="btn btn-ghost btn-lg" href="https://huggingface.co/Radinkazemian/kodr" target="_blank" rel="noopener">
-          Download the model
-        </a>
+        <a class="btn btn-primary btn-lg" href="https://huggingface.co/spaces/Radinkazemian/kodr-playground" target="_blank" rel="noopener"><span class="btn-caret">&gt;_</span> Try the live API</a>
+        <a class="btn btn-ghost btn-lg" href="#api">Read the API docs</a>
       </div>
       <ul class="hero-stats">
-        <li><b>27B</b> trainable params</li>
+        <li><b>1</b> API key</li>
         <li><b>4</b> native engines</li>
-        <li><b>1</b> map schema → any engine</li>
-        <li><b>100%</b> of reference removed after training</li>
+        <li><b>&lt;2s</b> median response</li>
+        <li><b>0</b> GPUs on your side</li>
       </ul>
     </div>
 
-    <div class="terminal" aria-label="Kodr in action">
+    <div class="terminal" aria-label="Kodr API in action">
       <div class="terminal-bar">
         <span class="term-dot red"></span><span class="term-dot yellow"></span><span class="term-dot green"></span>
-        <span class="term-title">kodr → parkour-arena.lua</span>
+        <span class="term-title">$ curl -X POST https://api.kodr.dev/v1/generate</span>
       </div>
-      <pre class="terminal-body" id="type-window"><span class="t-prompt">$ kodr --engine roblox --idea "lava arena with wall-jumps"</span>
-
-<span id="type-line"></span><span class="t-cursor">▊</span>
-</pre>
+      <pre class="terminal-body"><span class="t-faded">// arena ring closes every 30s — generated 1.9s</span>
+<span class="t-code" id="type-line"></span><span class="t-cursor">▊</span></pre>
       <div class="terminal-footer">
         <span class="t-tag">luau</span><span class="t-tag">godot</span><span class="t-tag">c#</span>
         <span class="t-faded">map preview</span>
-        <pre class="ascii" id="ascii-map">~~~~SSSSSS~~~~
+        <pre class="ascii">~~~~SSSSSS~~~~
 ~~  EEEEEE  ~~
 ~  EEEEEEEE  ~
 ~ EEEEEEEEEE ~
-~  EEEEEEEE  ~~</pre>
+~  EEEEEEEE  ~
+~~  EEEEEE  ~~
+~~~~SSSSSS~~~~</pre>
       </div>
     </div>
   </section>
@@ -98,9 +98,9 @@
   <!-- PLAYGROUND -->
   <section id="make" class="section">
     <div class="section-head">
-      <p class="eyebrow">// the playground</p>
+      <p class="eyebrow">// try the api</p>
       <h2>One idea in. Whole game out.</h2>
-      <p class="section-sub">Pick an engine, describe the game, get production-ready output. Full demo runs free on Hugging Face Spaces.</p>
+      <p class="section-sub">Pick an engine, describe the game, get production-ready output. The live demo runs free on Hugging Face Spaces — no GPU, no key needed.</p>
     </div>
     <div class="playground">
       <div class="play-controls">
@@ -118,27 +118,25 @@
           <span>Your idea</span>
           <textarea id="gen-idea" rows="4">A parkour arena with wall-jumps, moving platforms, and a lava ring that slowly closes in.</textarea>
         </label>
-        <a class="btn btn-primary" href="https://huggingface.co/spaces/Radinkazemian/kodr-playground" target="_blank" rel="noopener">
-          Generate in the live demo →
-        </a>
-        <p class="field-note">Opens the Kodr playground on Hugging Face Spaces — no GPU needed.</p>
+        <a class="btn btn-primary" href="https://huggingface.co/spaces/Radinkazemian/kodr-playground" target="_blank" rel="noopener">Generate in the live demo →</a>
+        <p class="field-note">Same API the playground uses — try a real request.</p>
       </div>
-      <div class="play-output" id="play-output">
+      <div class="play-output">
         <div class="play-output-head">
-          <span>buildMap.lua</span>
-          <span class="t-faded">kodr-map-v1</span>
+          <span>POST /v1/generate</span>
+          <span class="t-faded">buildMap.lua</span>
         </div>
 <pre>-- Magma Ring — generated by Kodr
-local scale = 6
-local origin = Vector3.new(-42, 0, -42)
-for z, row in ipairs(MAP) do
-  for x = 1, #row do
-    local tile = TILES[row:sub(x, x)]
-    local part = Instance.new("Part")
-    part.Material = tile.Material
-    part.Position = origin + Vector3.new((x-1)*scale, 0, (z-1)*scale)
-    part.Parent = folder
+local function build(map, folder)
+  for z, row in ipairs(map.tiles) do
+    for x = 1, #row do
+      local part = Instance.new("Part")
+      part.Material = TILES[row:sub(x, x)].Material
+      part.Position = origin + Vector3.new(x, 0, z) * map.scale
+      part.Parent = folder
+    end
   end
+  ring.animate(30, function(t) return 1 - t end)
 end</pre>
       </div>
     </div>
@@ -147,34 +145,16 @@ end</pre>
   <!-- FEATURES -->
   <section id="features" class="section">
     <div class="section-head">
-      <p class="eyebrow">// the engine</p>
+      <p class="eyebrow">// what you get</p>
       <h2>Built to ship games, not toy demos</h2>
     </div>
     <div class="grid-features">
-      <article class="feature">
-        <h3>Multi-engine fluency</h3>
-        <p>Luau, C#, GDScript, and C++ from one conversation. Same idea, natively compiled for every target.</p>
-      </article>
-      <article class="feature">
-        <h3>Universal map schema</h3>
-        <p>Kodr emits <code>kodr-map-v1</code> JSON — heightmap, spawns, lighting, rules — compiled to any engine with one command.</p>
-      </article>
-      <article class="feature">
-        <h3>Systems, not snippets</h3>
-        <p>Inventories, combat, saving, round logic, AI. Whole gameplay systems with server-authoritative logic where it matters.</p>
-      </article>
-      <article class="feature">
-        <h3>Game-feel tuning</h3>
-        <p>Coyote time, hit-stop, camera look-ahead. The invisible 20% that makes games feel professional.</p>
-      </article>
-      <article class="feature">
-        <h3>Truly yours</h3>
-        <p>A single standalone checkpoint. The reference model is deleted after training — no vendor lock-in, no runtime dependency.</p>
-      </article>
-      <article class="feature">
-        <h3>Open, always</h3>
-        <p>Apache-2.0. The training data and pipeline are public. Fork it, retrain it, ship it.</p>
-      </article>
+      <article class="feature"><h3>Multi-engine fluency</h3><p>One request shape, native output for Roblox Luau, Unity C#, Godot GDScript, and Unreal C++.</p></article>
+      <article class="feature"><h3>Universal map schema</h3><p>Ask for a level, get <code>kodr-map-v1</code> JSON — heightmap, spawns, lighting, rules — compilable to any engine in one call.</p></article>
+      <article class="feature"><h3>Systems, not snippets</h3><p>Inventories, combat, saving, round logic, AI. Whole gameplay systems, server-authoritative where it matters.</p></article>
+      <article class="feature"><h3>Game-feel tuning</h3><p>Coyote time, hit-stop, camera look-ahead. The invisible 20% that makes games feel professional.</p></article>
+      <article class="feature"><h3>One API, any stack</h3><p>Plain HTTPS + JSON. Python, Node, Luau, C#, or a CI pipeline. No SDK lock-in, one free key.</p></article>
+      <article class="feature"><h3>Fair by design</h3><p>Generous free tier, Apache-2.0 reference server, maps you fully own. No phantom fees, no GPU on your side.</p></article>
     </div>
   </section>
 
@@ -195,53 +175,51 @@ end</pre>
     </div>
   </section>
 
-  <!-- MODEL -->
-  <section id="model" class="section">
+  <!-- API -->
+  <section id="api" class="section">
     <div class="section-head">
-      <p class="eyebrow">// the model</p>
-      <h2>Trained from the best open coders</h2>
-      <p class="section-sub">Kodr is refined from Qwen3-class 27B coder models, merged into one standalone open-weight model, then re-published under Apache-2.0.</p>
+      <p class="eyebrow">// the api</p>
+      <h2>One endpoint. Every engine.</h2>
+      <p class="section-sub">Send an idea. Receive code, systems, or a full map — compiled for your engine, as plain JSON. Bring your own key from the free tier.</p>
     </div>
-    <div class="model-cards">
-      <a class="model-card" href="https://huggingface.co/Qwen/Qwen3.8-27B" target="_blank" rel="noopener">
-        <span class="model-flag">reference</span>
-        <h3>Qwen3.8-27B</h3>
-        <p>The primary base — general code intelligence, open weights.</p>
-        <span class="model-link">huggingface.co/Qwen/Qwen3.8-27B →</span>
-      </a>
-      <a class="model-card" href="https://huggingface.co/Kwaipilot/KAT-Coder-V2.5-Dev" target="_blank" rel="noopener">
-        <span class="model-flag">reference</span>
-        <h3>KAT-Coder V2.5 Dev</h3>
-        <p>Developer-oriented coder — used for instruction-following signal.</p>
-        <span class="model-link">Kwaipilot/KAT-Coder-V2.5-Dev →</span>
-      </a>
-      <a class="model-card" href="https://huggingface.co/DavidAU/Qwen3.8-27B-TURBO-Fable-Cold-Fusion-735-882-Heretic-Uncensored-NEO-CODER-MAX-MTP-GGUF" target="_blank" rel="noopener">
-        <span class="model-flag">reference</span>
-        <h3>Qwen3.8-27B TURBO GGUF</h3>
-        <p>Teacher for data distillation — enriches the training corpus.</p>
-        <span class="model-link">DavidAU/…-GGUF →</span>
-      </a>
-      <a class="model-card card-kodr" href="https://huggingface.co/Radinkazemian/kodr" target="_blank" rel="noopener">
-        <span class="model-flag accent">the one you ship</span>
-        <h3>kodr</h3>
-        <p>Standalone merged model. Reference removed. Apache-2.0.</p>
-        <span class="model-link">huggingface.co/Radinkazemian/kodr →</span>
-      </a>
+    <div class="api">
+      <div class="endpoints">
+        <a class="ep" href="https://huggingface.co/spaces/Radinkazemian/kodr-playground" target="_blank" rel="noopener"><span class="method post">POST</span><div><h3>/v1/generate</h3><p>Turn an idea into full scripts + gameplay systems.</p></div></a>
+        <a class="ep" href="https://huggingface.co/spaces/Radinkazemian/kodr-playground" target="_blank" rel="noopener"><span class="method post">POST</span><div><h3>/v1/map</h3><p>A playable <code>kodr-map-v1</code> level for any engine.</p></div></a>
+        <a class="ep" href="https://huggingface.co/spaces/Radinkazemian/kodr-playground" target="_blank" rel="noopener"><span class="method get">GET</span><div><h3>/v1/engines</h3><p>Targets: <code>luau</code> · <code>csharp</code> · <code>gdscript</code> · <code>cpp</code>.</p></div></a>
+      </div>
+      <pre class="api-code">$ curl -X POST https://api.kodr.dev/v1/generate
+  -H "Authorization: Bearer $KODR_KEY"
+  -d '{ "engine": "gdscript",
+        "idea":  "coyote-time platformer",
+        "tone":  "polished" }'
+
+{
+  "engine": "gdscript",
+  "files": [ { "path": "player.gd",
+               "language": "gdscript" } ],
+  "map": { "schema": "kodr-map-v1" },
+  "latency_ms": 1984
+}</pre>
+    </div>
+    <div class="api-cta">
+      <a class="btn btn-primary btn-lg" href="https://huggingface.co/spaces/Radinkazemian/kodr-playground" target="_blank" rel="noopener">Get your free key →</a>
+      <span class="api-cta-note">Works from any stack · generous free tier</span>
     </div>
   </section>
 
-  <!-- PIPELINE -->
-  <section id="pipeline" class="section">
+  <!-- HOW IT WORKS -->
+  <section id="how" class="section">
     <div class="section-head">
-      <p class="eyebrow">// how it's made</p>
-      <h2>Reference in. Reference gone.</h2>
+      <p class="eyebrow">// how it works</p>
+      <h2>Idea to shipped game in minutes</h2>
     </div>
     <ol class="steps">
-      <li><b>01</b><h3>Grab a reference</h3><p>Pick any Qwen3-class coder (27B) — or all three.</p></li>
-      <li><b>02</b><h3>Train on the game-dev corpus</h3><p>QLoRA fine-tune on hand-curated code and maps for every engine.</p></li>
-      <li><b>03</b><h3>Merge</h3><p>LoRA adapter fused into the base weights → one model.</p></li>
-      <li><b>04</b><h3>Delete the reference</h3><p>Cache purged, adapters gone. Only <b>kodr</b> remains, fully standalone.</p></li>
-      <li><b>05</b><h3>Publish</h3><p>Apache-2.0 weights on Hugging Face + a free playground.</p></li>
+      <li><b>01</b><h3>Sign up for a key</h3><p>Free tier, no checkout. Token in your header, done.</p></li>
+      <li><b>02</b><h3>POST your idea</h3><p>Describe the game, pick the engine, set a tone.</p></li>
+      <li><b>03</b><h3>Get the systems</h3><p>Full gameplay code and a map, returned as JSON.</p></li>
+      <li><b>04</b><h3>Compile to any engine</h3><p><code>kodr-map-v1</code> → <code>.lua</code>, <code>.cs</code>, <code>.gd</code>, <code>.cpp</code>.</p></li>
+      <li><b>05</b><h3>Ship today</h3><p>Drop the output into your project and ship. That's it.</p></li>
     </ol>
   </section>
 
@@ -253,20 +231,20 @@ end</pre>
     </div>
     <div class="faq">
       <details>
-        <summary>Is Kodr really trained from scratch?</summary>
-        <p>Kodr's weights are the result of fine-tuning an open Qwen3-class reference model and merging the adapter in — so the shipped checkpoint depends on nothing at inference time. The "build from scratch" philosophy applies to the <em>product</em>: data, pipeline, weights, and UI are all public.</p>
+        <summary>How do I get started?</summary>
+        <p>Hit "Try the live API" — or grab a free key in the playground and POST to <code>/v1/generate</code>. No checkout, no GPU, no SDK install.</p>
       </details>
       <details>
-        <summary>Does it work without a GPU?</summary>
-        <p>Chat over the free Hugging Face playground: yes. Generating maps and scripts locally: the 27B model runs on CPU via llama.cpp. Training from scratch needs a GPU — the Colab notebook sizes itself to the GPU it finds.</p>
+        <summary>Which engines are supported?</summary>
+        <p>Roblox (Luau), Unity (C#), Godot (GDScript), and Unreal (C++), plus engine-agnostic levels as <code>kodr-map-v1</code> JSON you can compile locally to any of the four.</p>
       </details>
       <details>
-        <summary>Can I retrain it on my own games?</summary>
-        <p>Yes. Drop JSONL chat examples into <code>model/dataset/</code>, rebuild, retrain. The whole pipeline is in this repo.</p>
+        <summary>How much does it cost?</summary>
+        <p>The free tier covers real projects. Larger plans scale with usage — and because the reference server is Apache-2.0, you can self-host with no per-seat fees.</p>
       </details>
       <details>
-        <summary>What's the license?</summary>
-        <p>Apache-2.0 — use it in commercial games, mod it, retrain it, ship it.</p>
+        <summary>Can I self-host the API?</summary>
+        <p>Yes. Everything the API runs on is open source — clone the repo, deploy the reference server, bring your own key. Same endpoints, same JSON.</p>
       </details>
     </div>
   </section>
@@ -275,28 +253,24 @@ end</pre>
 <footer class="footer">
   <div class="footer-grid">
     <div>
-      <a class="brand" href="#top">
-        <img src="assets/logo.svg" alt="kodr" class="brand-mark" />
-        <span class="brand-name">kodr</span>
-      </a>
-      <p class="footer-note">An open-source game generator AI. Point it at any engine.</p>
+      <a class="brand" href="#top"><img src="assets/logo.svg" alt="kodr" class="brand-mark" /><span class="brand-name">kodr</span></a>
+      <p class="footer-note">An open game-generation API. Point it at any engine.</p>
     </div>
     <div class="footer-cols">
       <div>
         <h4>Product</h4>
         <a href="#make">Playground</a>
         <a href="#features">Features</a>
-        <a href="#model">Model</a>
+        <a href="#api">API</a>
       </div>
       <div>
         <h4>Code</h4>
         <a href="https://github.com/Radin-dev1/kodr" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://huggingface.co/Radinkazemian/kodr" target="_blank" rel="noopener">Model card</a>
         <a href="https://huggingface.co/spaces/Radinkazemian/kodr-playground" target="_blank" rel="noopener">Playground Space</a>
       </div>
     </div>
   </div>
-  <p class="footer-legal">© <span id="year"></span> Kodr · Apache-2.0 · Not affiliated with the referenced model authors.</p>
+  <p class="footer-legal">© <span id="year"></span> Kodr · Apache-2.0</p>
 </footer>
 
 <script src="app.js"></script>

@@ -18,3 +18,9 @@ model/merged/
 .venv/
 .idea/
 .vscode/
+
+# transient engine artifacts
+_upload/
+kodr3d_*/
+my_game.py
+vision_game.py
